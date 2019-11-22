@@ -24,6 +24,7 @@ unsigned int afterConnec = 0;
 unsigned int beforeUp = 0;
 unsigned int afterUp = 0;
 int connStatus = 0;
+float batVol;
 
 //JSON buffer
 DynamicJsonBuffer jsonBuffer;
@@ -57,7 +58,7 @@ const char MESSAGE_BODY[] = "{\"deviceId\":\"%s\", \"macId\":%s, \"temp\":%d, \"
 char messagePayload[MESSAGE_MAX_LEN];
 
 //*********payload structure for telemetry post **************//
-const char TELE_BODY[] = "{\"deviceId\":\"%s\", \"startTime\":%d, \"beforeConnec\":%d, \"afterConnec\":%d, \"beforeUp\":%d, \"afterUp\":%d, \"connStatus\":%d, \"Counter\":%d, \"rssi\":%d}";
+const char TELE_BODY[] = "{\"deviceId\":\"%s\", \"startTime\":%d, \"beforeConnec\":%d, \"afterConnec\":%d, \"beforeUp\":%d, \"afterUp\":%d, \"connStatus\":%d, \"Counter\":%d, \"rssi\":%d, \"batVol\":%.2f}";
 char telePayload[MESSAGE_MAX_LEN];
 
 //*********payload structure for OTA **************//
@@ -399,7 +400,7 @@ void serveHTTP() {
        //Serial.print("-127 detect");
        t = 99;
      }
-   float batVol=analogRead(A0)*0.0040; //finalVolt = (1/1024)(1/VD1)(1/VD2)    external VD [VD1 = 3.3kohm/(1kohm+3.3kohm)]  Internal VD[VD2 = 100kohm/(100kohm+220kohm)]    
+   batVol=analogRead(A0)*0.0040; //finalVolt = (1/1024)(1/VD1)(1/VD2)    external VD [VD1 = 3.3kohm/(1kohm+3.3kohm)]  Internal VD[VD2 = 100kohm/(100kohm+220kohm)]    
     Serial.printf("Battery=%f \n",batVol);
     Serial.printf("analogValue %d",analogRead(A0));
     if(batVol>maxVal){
@@ -447,7 +448,7 @@ void goToSleep(){
            rssi = WiFi.RSSI(i);
         }
     }
-  snprintf(telePayload, MESSAGE_MAX_LEN, TELE_BODY, deviceId.c_str(),startTime,beforeConnec,afterConnec,beforeUp,afterUp,connStatus,counter,getRSSIasQuality(rssi));
+  snprintf(telePayload, MESSAGE_MAX_LEN, TELE_BODY, deviceId.c_str(),startTime,beforeConnec,afterConnec,beforeUp,afterUp,connStatus,counter,getRSSIasQuality(rssi),batVol);
    http.begin(postTele);//zx     //test
     http.addHeader("Content-Type" , "application/json");  //Specify content-type header
     int httpCode = http.POST(telePayload);     //Send the request
